@@ -1,1 +1,20 @@
-Dataset/myenv/
+# Ignore the Dataset folder
+Dataset/
+
+# Ignore Python virtual environments
+myenv/
+.venv/
+
+# Ignore all virtual environments in subdirectories
+**/myenv/
+**/.venv/
+
+# Ignore macOS and Windows system files
+
+.DS_Store
+Thumbs.db
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
