@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #imagePreview {
+            max-width: 100%;
+            height: auto;
+            display: none;
+            margin-top: 10px;
+        }
+        #imageSpinner {
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Deepfake vs Real Image Detector</h1>
+    <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+    <br>
+    <img id="imagePreview" alt="Image Preview">
+    <br>
+    <button onclick="submitImage()">Analyze Image</button>
+    <br>
+    <div id="imageSpinner">Processing...</div>
+    <div id="detectionResult"></div>
+
+    <script>
+        function previewImage(event) {
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const file = imageInput.files[0];
+
+            if (file) {
+                const url = URL.createObjectURL(file);
+                imagePreview.src = url;
+                imagePreview.style.display = 'block';
+            }
+        }
+
+        function submitImage() {
+            const imageInput = document.getElementById('imageInput');
+            const imageSpinner = document.getElementById('imageSpinner');
+            const detectionResult = document.getElementById('detectionResult');
+            
+            const file = imageInput.files[0];
+            if (!file) {
+                alert('Please select an image to upload.');
+                return;
+            }
+            imageSpinner.style.display = 'block';
+            detectionResult.innerHTML = ''; // Clear previous results
+            
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('http://127.0.0.1:5000/predict', { 
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json(); // Ensure response is valid JSON
+            })
+            .then(data => {
+                imageSpinner.style.display = "none";
+                if (data.error) {
+                    detectionResult.innerHTML = `Error: ${data.error}`;
+                } else {
+                    detectionResult.innerHTML = `Prediction: ${data.prediction} <br> Confidence: ${(data.confidence * 100).toFixed(2)}%`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                detectionResult.innerHTML = 'An error occurred while processing the image.';
+                imageSpinner.style.display = "none";
+            });
+
+        }
+    </script>
+</body>
+</html>
